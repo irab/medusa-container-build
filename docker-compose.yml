@@ -8,10 +8,11 @@ services:
       - 9000:9000
     depends_on:
       - postgres
+      - redis
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/medusa-docker
       REDIS_URL: redis://cache
-      NODE_ENV: development
+      NODE_ENV: production
       JWT_SECRET: some_jwt_secret
       COOKIE_SECRET: some_cookie_secret
       PORT: 9000
@@ -35,11 +36,14 @@ services:
     build:
       dockerfile: Admin.Dockerfile
     image: admin:test
+    container_name: medusa-admin
     ports:
-      - 7001:7001
+      - 7001:9000
     depends_on:
       - backend
-    container_name: medusa-admin
+      - postgres
+      - redis
     environment:
       NODE_OPTIONS: --openssl-legacy-provider
+      REDIS_URL: redis://cache
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/medusa-docker

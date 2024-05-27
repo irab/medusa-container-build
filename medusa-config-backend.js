@@ -8,8 +8,7 @@ const STORE_CORS = process.env.STORE_CORS || "http://localhost:8000";
 const DATABASE_URL =
   process.env.DATABASE_URL;
 
-const REDIS_URL = process.env.REDIS_URL;
-
+const REDIS_URL = process.env.REDIS_URL || "redis://cache:6379";
 const plugins = [
   `medusa-fulfillment-manual`,
   `medusa-payment-manual`,
@@ -18,22 +17,11 @@ const plugins = [
     options: {
       upload_dir: "uploads",
     },
-  },
-  {
-    resolve: "@medusajs/admin",
-    /** @type {import('@medusajs/admin').PluginOptions} */
-    options: {
-      serve: false,
-      autoRebuild: true,
-      develop: {
-        open: process.env.OPEN_BROWSER !== "false",
-      },
-    },
-  },
+  }
 ];
 
 const modules = {
-  /*eventBus: {
+  eventBus: {
     resolve: "@medusajs/event-bus-redis",
     options: {
       redisUrl: REDIS_URL
@@ -44,7 +32,7 @@ const modules = {
     options: {
       redisUrl: REDIS_URL
     }
-  },*/
+  },
 };
 
 /** @type {import('@medusajs/medusa').ConfigModule["projectConfig"]} */

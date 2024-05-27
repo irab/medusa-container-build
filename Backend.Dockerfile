@@ -1,5 +1,3 @@
-## Build Image with outputs in /app/dist/
-
 FROM node:alpine3.18 as builder
 WORKDIR /app
 
@@ -28,13 +26,15 @@ COPY ./medusa.sh .
 
 COPY ./medusa/package*.json .
 
-COPY ./medusa/medusa-config.js .
-
-RUN yarn global add @medusajs/medusa-cli
+RUN yarn global add @medusajs/medusa-cli@1.3.22
 
 RUN yarn install --only=production
 
 COPY --from=builder /app/dist ./dist
+
+COPY ./seed.json seed.json
+
+COPY ./medusa-config-backend.js medusa-config.js
 
 EXPOSE 9000
 

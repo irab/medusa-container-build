@@ -1,13 +1,10 @@
-FROM node:lts as builder
+FROM node:lts
 
 WORKDIR /app/admin
 
 ENV NODE_OPTIONS=--openssl-legacy-provider
 
 COPY ./medusa .
-
-COPY medusa-config-admin.js medusa-config.js
-
 
 RUN rm -rf node_modules
 
@@ -17,8 +14,10 @@ RUN apt -y install yarn
 
 RUN yarn add crossenv
 
-RUN yarn build:admin
+RUN yarn build
+
+COPY medusa-config-admin.js medusa-config.js
 
 EXPOSE 7001
 
-CMD ["yarn", "run", "start"]
+CMD ["yarn", "start"]
