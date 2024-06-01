@@ -17,7 +17,7 @@ You need to have yarn install correctly. On Debian Bookworm ensure:
 
 1. [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
 1. `sudo apt install nodejs npm` - probably some other things as well??
-1. `yarn set version classic` - Classic it seems is needed, I had issues with Berry
+1. `yarn set version berry` - Berry is needed to run `dlx` command. Classic is needed in the containers.
 
 
 ## Build Steps
