@@ -3,7 +3,7 @@ services:
     build:
       dockerfile: Backend.Dockerfile
     image: backend:test
-    container_name: medusa-server
+    container_name: backend
     ports:
       - 9000:9000
     depends_on:
