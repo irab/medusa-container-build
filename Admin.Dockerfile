@@ -12,9 +12,9 @@ RUN apt update
 
 RUN apt -y install yarn
 
-RUN yarn add crossenv
+RUN yarn add crossenv medusa-plugin-file-cloud-storage
 
-RUN yarn build
+RUN yarn build:admin
 
 COPY medusa-config-admin.js medusa-config.js
 

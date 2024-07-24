@@ -13,11 +13,15 @@ const plugins = [
   `medusa-fulfillment-manual`,
   `medusa-payment-manual`,
   {
-    resolve: `@medusajs/file-local`,
+    resolve: `medusa-plugin-file-cloud-storage`,
     options: {
-      upload_dir: "uploads",
-    },
-  }
+        credentials : {
+          client_email: process.env.GCS_CLIENT_EMAIL,
+          private_key: process.env.GCS_PRIVATE_KEY
+        },
+        publicBucketName: process.env.GCP_STORAGE_PUBLIC_BUCKET_NAME
+      },
+  },
 ];
 
 const modules = {
