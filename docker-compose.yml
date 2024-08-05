@@ -16,6 +16,7 @@ services:
       JWT_SECRET: some_jwt_secret
       COOKIE_SECRET: some_cookie_secret
       PORT: 9000
+      MEDUSA_FF_TAX_INCLUSIVE_PRICING: true
 
   postgres:
     image: postgres:15.7
@@ -47,3 +48,8 @@ services:
       NODE_OPTIONS: --openssl-legacy-provider
       REDIS_URL: redis://cache
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/medusa-docker
+      GCS_CLIENT_EMAIL: cs-gcs-demo-rw@medusa-dev-de3a.iam.gserviceaccount.com
+      GCS_PRIVATE_KEY: add-here
+      GCS_PUBLIC_BUCKET_NAME: cs-medusa-images-demo
+      GCS_BASE_PUBLIC_URL: https://storage.googleapis.com/cs-medusa-images-demo/
+
