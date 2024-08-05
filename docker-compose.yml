@@ -49,7 +49,8 @@ services:
       REDIS_URL: redis://cache
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/medusa-docker
       GCS_CLIENT_EMAIL: cs-gcs-demo-rw@medusa-dev-de3a.iam.gserviceaccount.com
-      GCS_PRIVATE_KEY: add-here
+      GCS_PRIVATE_KEY: ${GCS_PRIVATE_KEY}
       GCS_PUBLIC_BUCKET_NAME: cs-medusa-images-demo
       GCS_BASE_PUBLIC_URL: https://storage.googleapis.com/cs-medusa-images-demo/
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
 

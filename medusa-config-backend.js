@@ -22,6 +22,13 @@ const plugins = [
         publicBucketName: process.env.GCP_STORAGE_PUBLIC_BUCKET_NAME
       },
   },
+  {
+    resolve: `medusa-payment-stripe`,
+    options: {
+      api_key: process.env.STRIPE_API_KEY,
+      webhook_secret: process.env.STRIPE_WEBHOOK_SECRET,
+    },
+  },
 ];
 
 const modules = {
