@@ -13,7 +13,7 @@ RUN rm -rf node_modules
 
 RUN yarn add medusa-plugin-file-cloud-storage
 
-RUN yarn global add @medusajs/medusa-cli@1.3.22
+RUN yarn global add @medusajs/medusa-cli@1.3.22 medusa-payment-stripe
 
 RUN yarn install
 

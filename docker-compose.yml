@@ -16,7 +16,7 @@ services:
       JWT_SECRET: some_jwt_secret
       COOKIE_SECRET: some_cookie_secret
       PORT: 9000
-      MEDUSA_FF_TAX_INCLUSIVE_PRICING: true
+      STRIPE_API_KEY: ${STRIPE_API_KEY}
 
   postgres:
     image: postgres:15.7
@@ -52,5 +52,3 @@ services:
       GCS_PRIVATE_KEY: ${GCS_PRIVATE_KEY}
       GCS_PUBLIC_BUCKET_NAME: cs-medusa-images-demo
       GCS_BASE_PUBLIC_URL: https://storage.googleapis.com/cs-medusa-images-demo/
-      STRIPE_API_KEY: ${STRIPE_API_KEY}
-
