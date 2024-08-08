@@ -51,7 +51,8 @@
       "currency_code": "nzd",
       "tax_rate": 15,
       "payment_providers": [
-        "manual"
+        "manual",
+        "stripe"
       ],
       "fulfillment_providers": [
         "manual"
