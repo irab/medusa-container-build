@@ -11,7 +11,7 @@ COPY ./medusa .
 
 RUN rm -rf node_modules
 
-RUN yarn add medusa-plugin-file-cloud-storage
+RUN yarn add medusa-plugin-file-cloud-storage medusa-plugin-sendgrid medusa-payment-stripe
 
 RUN yarn global add @medusajs/medusa-cli@1.3.22
 

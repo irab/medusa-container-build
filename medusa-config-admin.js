@@ -18,7 +18,7 @@ const plugins = [
     options: {
       credentials : {
         client_email: process.env.GCS_CLIENT_EMAIL,
-        private_key: process.env.GCS_PRIVATE_KEY.split(String.raw`\n`).join('\n')
+        private_key: process.env.GCS_SA_PRIVATE_KEY.split(String.raw`\n`).join('\n')
       },
       publicBucketName: process.env.GCS_PUBLIC_BUCKET_NAME,
       basePublicUrl: process.env.GCS_BASE_PUBLIC_URL,

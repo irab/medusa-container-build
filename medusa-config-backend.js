@@ -17,11 +17,25 @@ const plugins = [
     options: {
         credentials : {
           client_email: process.env.GCS_CLIENT_EMAIL,
-          private_key: process.env.GCS_PRIVATE_KEY
+          private_key: process.env.GCS_SA_PRIVATE_KEY
         },
         publicBucketName: process.env.GCP_STORAGE_PUBLIC_BUCKET_NAME
       },
   },
+  {
+    resolve: `medusa-payment-stripe`,
+    options: {
+      api_key: process.env.STRIPE_SECRET_KEY
+    },
+  },
+  {
+    resolve: `medusa-plugin-sendgrid`,
+    options: {
+      api_key: process.env.SENDGRID_API_KEY,
+      from: process.env.SENDGRID_FROM,
+      order_placed_template: process.env.SENDGRID_ORDER_PLACED_ID,
+    },
+  }
 ];
 
 const modules = {
