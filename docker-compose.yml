@@ -10,13 +10,15 @@ services:
       - postgres
       - redis
     environment:
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/medusa-docker
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/${PG_MEDUSA_DB_NAME}
       REDIS_URL: redis://cache
       NODE_ENV: production
       JWT_SECRET: some_jwt_secret
       COOKIE_SECRET: some_cookie_secret
       PORT: 9000
-      STRIPE_API_KEY: ${STRIPE_API_KEY}
+      STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+
 
   postgres:
     image: postgres:15.7
@@ -25,7 +27,7 @@ services:
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: medusa-docker
+      POSTGRES_DB: ${PG_MEDUSA_DB_NAME}
 
   redis:
     image: redis
@@ -45,10 +47,10 @@ services:
       - postgres
       - redis
     environment:
-      NODE_OPTIONS: --openssl-legacy-provider
+      NODE_OPTIONS: --openssl-legacy-provider 
       REDIS_URL: redis://cache
-      DATABASE_URL: postgres://postgres:postgres@postgres:5432/medusa-docker
-      GCS_CLIENT_EMAIL: cs-gcs-demo-rw@medusa-dev-de3a.iam.gserviceaccount.com
-      GCS_PRIVATE_KEY: ${GCS_PRIVATE_KEY}
-      GCS_PUBLIC_BUCKET_NAME: cs-medusa-images-demo
-      GCS_BASE_PUBLIC_URL: https://storage.googleapis.com/cs-medusa-images-demo/
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/${PG_MEDUSA_DB_NAME} # Not sure if this is needed for the Admin UI?
+      GCS_CLIENT_EMAIL: ${GCS_CLIENT_EMAIL}
+      GCS_SA_PRIVATE_KEY: ${GCS_PRIVATE_KEY}
+      GCS_PUBLIC_BUCKET_NAME: ${GCS_PUBLIC_BUCKET_NAME}
+      GCS_BASE_PUBLIC_URL: https://storage.googleapis.com/${GCS_PUBLIC_BUCKET_NAME}/
