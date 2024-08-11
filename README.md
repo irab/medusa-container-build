@@ -27,6 +27,8 @@ Run [build.sh](./build.sh), which uses the medusa-cli tool (version pinned) to i
 
 Medusa could be run off the same image and container but I'm trying to them running seperately so I've got different medusa-config.js files for each to test a few things.
 
+There is a seed.json file that initialised the 
+
 ## Accessing Admin and API Endpoints
 
 **Admin Dashboard:** http://localhost:7001/adminapp/ - the admin user and password is created in [medusa.sh](./medusa.sh)
@@ -38,6 +40,10 @@ Test the API endpoint with something like this `curl --location 'http://localhos
 ## Troubleshooting
 
 Note that the Admin image is built from node:lts which has `/bin/bash` installed and the backend image is build from alpine, which has `/bin/sh` as the default shell.
+
+| :exclamation: [medusa.sh](./medusa.sh) initially seeds the DB on first run but the container will fail on second boot due to data and user already existing. Also the seed.json contains data for my personal project...|
+|---------------------------------------------------------------------------------------------------------------------------------------------|
+
 
 ```bash
 # Exec into the admin container
