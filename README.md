@@ -1,13 +1,11 @@
 # Building containerised Medusa images for production and development use
 
-Four core components are required for a full Medusa deployment:
+Four core components are required for a full Medusa backend deployment:
 
 - Admin UI
 - Backend Server running Store and Admin APIs
 - A Redis instance as an Eventbus
 - A Postgres instance with an initialised DB
-- TODO: Add a frontend of some sort
-
 
 This is a work in progress and "works on my machine" and has not been tested on any other system.
 
@@ -18,6 +16,9 @@ You need to have yarn install correctly. On Debian Bookworm ensure:
 1. [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
 1. `sudo apt install nodejs npm` - probably some other things as well??
 1. `yarn set version berry` - Berry is needed to run `dlx` command. Classic is needed in the containers.
+1. Google Cloud Storage and service account to host uploaded files #TODO_DOCS
+1. Stripe API Key and frontend setup with Publishable Key #TODO_DOCS
+1. SendGrid API Key and template configured (requires Redis) #TODO_DOCS
 
 
 ## Build Steps
@@ -44,9 +45,15 @@ docker compose exec backend /bin/bash
 
 # Exec into the backend container
 docker compose exec backend /bin/sh
+
+# Shell on disposable container using the last build of the backend image
+docker compose build backend
+docker run -it $(docker image ls backend -q) /bin/sh
+
+# Delete all containers including postgres and redis state
+docker compose down
 ```
 
 Note: Postgres database state is running in Docker. Don't expect it to exist after the container is stopped.
-
 
 Unsure what version of Medusa is actually installed by `medusa-cli`, as this is does not seem configurable?! :unamused:
