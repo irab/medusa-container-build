@@ -18,12 +18,14 @@ services:
       PORT: 9000
       STRIPE_API_KEY: ${STRIPE_SECRET_KEY}
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
+      SENDGRID_FROM: ${SENDGRID_FROM}
+      SENDGRID_ORDER_PLACED_ID: ${SENDGRID_ORDER_PLACED_ID}
 
 
   postgres:
     image: postgres:15.7
     ports:
-      - "5432:5432"
+      - 5432:5432
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -32,8 +34,8 @@ services:
   redis:
     image: redis
     container_name: cache
-    expose:
-      - 6379
+    ports:
+      - 6379:6379
 
   admin:
     build:
@@ -51,6 +53,6 @@ services:
       REDIS_URL: redis://cache
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/${PG_MEDUSA_DB_NAME} # Not sure if this is needed for the Admin UI?
       GCS_CLIENT_EMAIL: ${GCS_CLIENT_EMAIL}
-      GCS_SA_PRIVATE_KEY: ${GCS_PRIVATE_KEY}
+      GCS_SA_PRIVATE_KEY: ${GCS_SA_PRIVATE_KEY}
       GCS_PUBLIC_BUCKET_NAME: ${GCS_PUBLIC_BUCKET_NAME}
       GCS_BASE_PUBLIC_URL: https://storage.googleapis.com/${GCS_PUBLIC_BUCKET_NAME}/
