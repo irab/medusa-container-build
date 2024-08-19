@@ -11,6 +11,7 @@ services:
       - redis
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/${PG_MEDUSA_DB_NAME}
+      STORE_CORS: ${STORE_CORS}
       REDIS_URL: redis://cache
       NODE_ENV: production
       JWT_SECRET: some_jwt_secret
