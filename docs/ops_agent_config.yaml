@@ -1,0 +1,18 @@
+logging:
+  receivers:
+    medusa_docker:
+      type: files
+      include_paths: [/var/lib/docker/containers/*/*.log]
+      record_log_file_path: true
+      wildcard_refresh_interval: 10s
+  processors:
+    combined_log_extract:
+      type: parse_regex
+      regex: '^(?<remote_host>\S+) (?<identity>\S+) (?<remote_user>\S+) \[(?<time_local>[^\]]+)\] \\"(?<request>[^"]+)\\" (?<status>\S+) (?<bytes_sent>\S+) \\"(?<http_referer>[^"]+)\\" \\"(?<http_user_agent>[^"]+)\\"'
+  service:
+    pipelines:
+      default_pipeline:
+        receivers:
+        - medusa_docker
+        processors:
+        - combined_log_extract
