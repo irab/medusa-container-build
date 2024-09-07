@@ -11,6 +11,7 @@ services:
     depends_on:
       - postgres
       - redis
+      - minio
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/${PG_MEDUSA_DB_NAME}
       STORE_CORS: ${STORE_CORS}
@@ -54,6 +55,7 @@ services:
       - backend
       - postgres
       - redis
+      - minio
     environment:
       NODE_OPTIONS: --openssl-legacy-provider 
       REDIS_URL: redis://cache
@@ -77,6 +79,7 @@ services:
       - 10001:10001
     volumes:
       - "./minio.config.json:/tmp/.mc/config.json"
+      - "./minio.sh:/minio.sh"
     environment:
       MINIO_ROOT_USER: ${MINIO_PRIVATE_ACCESS_KEY}
       MINIO_ROOT_PASSWORD: ${MINIO_PRIVATE_SECRET_KEY}
