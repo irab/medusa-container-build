@@ -1,0 +1,12 @@
+{
+        "version": "10",
+        "aliases": {
+                "local": {
+                        "url": "http://localhost:10000",
+                        "accessKey": "",
+                        "secretKey": "",
+                        "api": "S3v4",
+                        "path": "auto"
+                }
+        }
+}

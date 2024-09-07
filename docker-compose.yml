@@ -2,8 +2,10 @@ services:
   backend:
     build:
       dockerfile: Backend.Dockerfile
-    image: backend:test
+    image: medusa-backend
     container_name: backend
+    volumes:
+      - "./medusa.sh:/app/medusa.sh"
     ports:
       - 9000:9000
     depends_on:
@@ -21,7 +23,10 @@ services:
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       SENDGRID_FROM: ${SENDGRID_FROM}
       SENDGRID_ORDER_PLACED_ID: ${SENDGRID_ORDER_PLACED_ID}
-
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_PRIVATE_BUCKET: ${MINIO_PRIVATE_BUCKET}
+      MINIO_PRIVATE_ACCESS_KEY: ${MINIO_PRIVATE_ACCESS_KEY}
+      MINIO_PRIVATE_SECRET_KEY: ${MINIO_PRIVATE_SECRET_KEY}
 
   postgres:
     image: postgres:15.8
@@ -41,7 +46,7 @@ services:
   admin:
     build:
       dockerfile: Admin.Dockerfile
-    image: admin:test
+    image: medusa-admin
     container_name: medusa-admin
     ports:
       - 7001:9000
@@ -57,3 +62,23 @@ services:
       GCS_SA_PRIVATE_KEY: ${GCS_SA_PRIVATE_KEY}
       GCS_PUBLIC_BUCKET_NAME: ${GCS_PUBLIC_BUCKET_NAME}
       GCS_BASE_PUBLIC_URL: https://storage.googleapis.com/${GCS_PUBLIC_BUCKET_NAME}/
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
+      MINIO_PRIVATE_BUCKET: ${MINIO_PRIVATE_BUCKET}
+      MINIO_PRIVATE_ACCESS_KEY: ${MINIO_PRIVATE_ACCESS_KEY}
+      MINIO_PRIVATE_SECRET_KEY: ${MINIO_PRIVATE_SECRET_KEY}
+
+  minio:
+    build:
+      dockerfile: Minio.Dockerfile
+    image: medusa-minio
+    container_name: minio
+    ports:
+      - 10000:10000
+      - 10001:10001
+    volumes:
+      - "./minio.config.json:/tmp/.mc/config.json"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_PRIVATE_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${MINIO_PRIVATE_SECRET_KEY}
+
+    

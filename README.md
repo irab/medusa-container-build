@@ -37,11 +37,19 @@ There is a seed.json file that initialised the
 
 Test the API endpoint with something like this `curl --location 'http://localhost:9000/store/products' --header 'Accept: application/json' | jq` (assuming you have jq installed)
 
+## Minio
+
+Minio is an S3 compatible file storage service that integrates with MedusaJS for importing and export of data such as orders or products.
+
+See [here](https://www.npmjs.com/package/medusa-file-minio) for the NPM package and [here](https://docs.medusajs.com/plugins/file-service/minio) for official plugin docs.
+
+[Exporting orders requires](https://docs.medusajs.com/plugins/file-service/minio#handle-exports) `MINIO_PRIVATE_BUCKET` to be set and will not work without it being present in medusa-config.js, as sensitive customer data should not be exported into a public bucket.
+
 ## Troubleshooting
 
 Note that the Admin image is built from node:lts which has `/bin/bash` installed and the backend image is build from alpine, which has `/bin/sh` as the default shell.
 
-| :exclamation: [medusa.sh](./medusa.sh) initially seeds the DB on first run but the container will fail on second boot due to data and user already existing. Also the seed.json contains data for my personal project...|
+| :exclamation: [medusa.sh](./medusa.sh) initially seeds the DB on first run but the container will fail on second boot due to data and a user already existing. I need to add some logic but I fiddle with this file so much I just edit and `docker compose down backend && docker compose up backend`.  Also the seed.json contains data for my personal project, edit as needed...|
 |---------------------------------------------------------------------------------------------------------------------------------------------|
 
 
