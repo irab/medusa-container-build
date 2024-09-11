@@ -33,9 +33,9 @@ There is a seed.json file that initialised the
 
 **Admin Dashboard:** http://localhost:7001/adminapp/ - the admin user and password is created in [medusa.sh](./medusa.sh)
 
-**API endpoint:** http://localhost:9000
+**API endpoint:** http://localhost:7001 (Note change from default port of 9000)
 
-Test the API endpoint with something like this `curl --location 'http://localhost:9000/store/products' --header 'Accept: application/json' | jq` (assuming you have jq installed)
+Test the API endpoint with something like this `curl --location 'http://localhost:7001/store/products' --header 'Accept: application/json' | jq` (assuming you have jq installed)
 
 ## Minio
 
