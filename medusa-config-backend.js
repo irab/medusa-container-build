@@ -37,12 +37,18 @@ const plugins = [
     },
   },
   {
-    resolve: `medusa-file-minio`,
+    resolve: `medusa-file-s3`,
     options: {
-        endpoint: process.env.MINIO_ENDPOINT,
-        private_bucket: process.env.MINIO_PRIVATE_BUCKET,
-        private_access_key_id: process.env.MINIO_PRIVATE_ACCESS_KEY,
-        private_secret_access_key: process.env.MINIO_PRIVATE_SECRET_KEY,
+        s3_url: process.env.S3_URL,
+        bucket: process.env.S3_BUCKET,
+        region: process.env.S3_REGION,
+        access_key_id: process.env.S3_ACCESS_KEY_ID,
+        secret_access_key: process.env.S3_SECRET_ACCESS_KEY,
+        cache_control: process.env.S3_CACHE_CONTROL,
+        // optional
+        download_file_duration:
+          process.env.S3_DOWNLOAD_FILE_DURATION,
+        prefix: process.env.S3_PREFIX,
     },
   },
 ];
