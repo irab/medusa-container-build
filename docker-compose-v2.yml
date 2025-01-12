@@ -82,7 +82,7 @@ services:
       set +x &&
       echo "Raw response from script:" &&
       echo "$$API_KEY_RESPONSE" &&
-      API_KEY=$$(echo "$$API_KEY_RESPONSE" | tail -n1) &&
+      API_KEY=$$(echo "$$API_KEY_RESPONSE" | tail -n1 | tr -d "[:space:]") &&
       if [ -z "$$API_KEY" ]; then
         echo "Failed to create API key - received empty response" &&
         echo "Full response from create-publishable-key.sh:" &&
@@ -96,7 +96,7 @@ services:
       else
         echo "API key created successfully" &&
         echo "Writing API key to file..." &&
-        echo "$$API_KEY" > /api_key/api_key &&
+        echo -n "$$API_KEY" > /api_key/api_key &&
         echo "API key written to /api_key" &&
         echo "Bootstrap process complete"
       fi'
@@ -168,6 +168,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.storefront
+      target: dev
     env_file: ".env"
     container_name: dev-storefront
     networks:
@@ -180,13 +181,21 @@ services:
     ports:
       - 8000:8000
     volumes:
-      - ./:/app
-      - /app/node_modules
+      - nextjs_modules:/app/node_modules
       - api_key:/api_key:ro
     environment:
       - MEDUSA_BACKEND_URL=http://medusa_server:9000
       - NODE_ENV=development
-    command: sh -c "yarn dev"
+      - NEXT_TELEMETRY_DISABLED=1
+    command: >
+      sh -c '
+      echo "Waiting for API key..." &&
+      while [ ! -f /api_key/api_key ]; do
+        sleep 2
+      done &&
+      export NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=$$(cat /api_key/api_key | tr -d "[:space:]") &&
+      echo "Got API key, starting development server..." &&
+      yarn dev'
     stdin_open: true
     tty: true
 
@@ -194,6 +203,7 @@ volumes:
   medusa-data:
   uploads:
   api_key:
+  nextjs_modules:
 
 networks:
   medusa-network:

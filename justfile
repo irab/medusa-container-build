@@ -21,7 +21,7 @@ all: frontend
 # Start an interactive development environment for the storefront
 dev:
     @echo "Starting storefront in development mode..."
-    docker compose -f docker-compose-v2.yml --profile dev up
+    docker compose -f docker-compose-v2.yml --profile dev up -d
 
 # Watch for changes
 watch:
