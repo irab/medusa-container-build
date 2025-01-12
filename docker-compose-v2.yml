@@ -56,12 +56,12 @@ services:
     entrypoint: ""
     restart: unless-stopped
 
-  bootstrap:
+  create_api:
     profiles: ["backend", "frontend", "dev", "all"]
     build:
       context: .
-      dockerfile: Bootstrap.Dockerfile
-    container_name: bootstrap
+      dockerfile: Dockerfile.create_api
+    container_name: create_api
     networks:
       - medusa-network
     environment:
@@ -69,7 +69,7 @@ services:
       - ADMIN_PASSWORD=supersecret
     command: >
       sh -c '
-      echo "Starting bootstrap process..." &&
+      echo "Starting process to create Publishable API key..." &&
       echo "Waiting for Medusa server to be ready..." &&
       until curl -s -f http://medusa_server:9000/health; do
         echo "Medusa server is not ready - waiting..."
@@ -98,7 +98,7 @@ services:
         echo "Writing API key to file..." &&
         echo -n "$$API_KEY" > /api_key/api_key &&
         echo "API key written to /api_key" &&
-        echo "Bootstrap process complete"
+        echo "API Key bootstrap process complete"
       fi'
     volumes:
       - api_key:/api_key
@@ -113,7 +113,7 @@ services:
     networks:
       - medusa-network
     depends_on:
-      bootstrap:
+      create_api:
         condition: service_completed_successfully
       medusa_server:
         condition: service_healthy
@@ -174,7 +174,7 @@ services:
     networks:
       - medusa-network
     depends_on:
-      bootstrap:
+      create_api:
         condition: service_completed_successfully
       medusa_server:
         condition: service_healthy

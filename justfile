@@ -2,14 +2,14 @@
 default:
     @just --list
 
-# Start core backend services (postgres, redis, medusa_server, medusa_worker, bootstrap)
+# Start core backend services (postgres, redis, medusa_server, medusa_worker, create_api)
 backend:
     docker compose -f docker-compose-v2.yml --profile backend up -d
     @echo "Waiting for backend services to be ready..."
-    @docker compose -f docker-compose-v2.yml logs -f bootstrap | grep -q "Bootstrap process complete"
+    @docker compose -f docker-compose-v2.yml logs -f create_api | grep -q "Bootstrap process complete"
 
 # Start frontend with all required backend services
-# (automatically starts postgres, redis, medusa_server, medusa_worker, bootstrap)
+# (automatically starts postgres, redis, medusa_server, medusa_worker, create_api)
 frontend: backend
     @echo "Backend is ready, starting frontend..."
     docker compose -f docker-compose-v2.yml --profile frontend up -d
