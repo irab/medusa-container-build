@@ -1,0 +1,23 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Install dependencies
+RUN apk add --no-cache libc6-compat git
+
+# Enable corepack and set yarn version
+RUN corepack enable && corepack prepare yarn@3.2.3 --activate
+
+# Clone the repository
+RUN git clone https://github.com/medusajs/nextjs-starter-medusa.git /app
+
+# Install dependencies
+RUN yarn install
+
+# Set environment variable to disable telemetry
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=development
+
+EXPOSE 8000
+
+CMD ["yarn", "dev"]
