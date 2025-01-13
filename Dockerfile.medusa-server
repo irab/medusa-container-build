@@ -4,8 +4,11 @@ FROM node:20 AS builder
 # Set the working directory
 WORKDIR /app
 
-# Clone the repository
-RUN git clone https://github.com/medusajs/medusa-starter-default.git .
+# Add build argument for repository URL
+ARG MEDUSA_REPO
+
+# Clone the repository (shallow clone)
+RUN git clone --depth 1 $MEDUSA_REPO .
 
 # Copy the local medusa-config.ts file to override the existing one
 COPY medusa-config.ts /app/medusa-config.ts

@@ -2,7 +2,7 @@
 
 npx medusa db:migrate
 
-npx medusa user -e admin@example.com -p supersecret
+npx medusa user -e $ADMIN_EMAIL -p $ADMIN_PASSWORD
 
 npx medusa exec ./src/scripts/seed.ts
 

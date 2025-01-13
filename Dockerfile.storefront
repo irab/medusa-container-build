@@ -13,8 +13,11 @@ WORKDIR /app
 FROM base AS deps
 WORKDIR /app
 
-# Clone the repository and install dependencies
-RUN git clone https://github.com/medusajs/nextjs-starter-medusa.git /app && \
+# Add build argument for repository URL
+ARG STOREFRONT_REPO
+
+# Clone the repository and install dependencies (shallow clone)
+RUN git clone --depth 1 $STOREFRONT_REPO /app && \
     yarn install
 
 # Development image

@@ -3,6 +3,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.medusa-server
+      args:
+        MEDUSA_REPO: ${MEDUSA_REPO}
     profiles: ["backend", "frontend", "dev", "all"]
     environment:
       MEDUSA_BACKEND_URL: http://localhost:9000
@@ -37,6 +39,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.medusa-server
+      args:
+        MEDUSA_REPO: ${MEDUSA_REPO}
     environment:
       MEDUSA_BACKEND_URL: http://localhost:9000
       DISABLE_MEDUSA_ADMIN: true
@@ -64,9 +68,7 @@ services:
     container_name: create_api
     networks:
       - medusa-network
-    environment:
-      - ADMIN_EMAIL=admin@example.com
-      - ADMIN_PASSWORD=supersecret
+    env_file: ".env"
     command: >
       sh -c '
       echo "Starting process to create Publishable API key..." &&
@@ -108,6 +110,8 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.storefront.prod
+      args:
+        STOREFRONT_REPO: ${STOREFRONT_REPO}
     env_file: ".env"
     container_name: storefront
     networks:
@@ -143,8 +147,8 @@ services:
       retries: 5
     networks:
       - medusa-network
-    expose:
-      - 5432
+    ports:
+      - 5432:5432
 
   redis:
     profiles: ["backend", "frontend", "dev", "all"]
@@ -154,8 +158,8 @@ services:
     env_file: ".env"
     networks:
       - medusa-network
-    expose:
-      - 6379
+    ports:
+      - 6379:6379
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 1m30s
@@ -169,6 +173,8 @@ services:
       context: .
       dockerfile: Dockerfile.storefront
       target: dev
+      args:
+        STOREFRONT_REPO: ${STOREFRONT_REPO}
     env_file: ".env"
     container_name: dev-storefront
     networks:
