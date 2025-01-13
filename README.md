@@ -1,73 +1,140 @@
-# Building containerised Medusa images for production and development use
+# Medusa Container Build
 
-Four core components are required for a full Medusa backend deployment:
+This repository contains Docker configurations for running Medusa e-commerce in containers, supporting both production and development environments.
 
-- Admin UI
-- Backend Server running Store and Admin APIs
-- A Redis instance as an Eventbus
-- A Postgres instance with an initialised DB
+## Components
 
-This is a work in progress and "works on my machine" and has not been tested on any other system.
+The setup includes the following core components:
+- Medusa Server (Store API, Admin API, and Admin UI)
+- Medusa Worker (Event processing)
+- Next.js Storefront
+- PostgreSQL database
+- Redis for event bus
+- API key bootstrap service
 
-## Prerequisites and environment setup
+## Build Process & Scripts
 
-You need to have yarn install correctly. On Debian Bookworm ensure:
+The build process involves several key scripts that handle initialization and setup:
 
-1. [Docker Desktop](https://www.docker.com/products/docker-desktop/) installed
-1. `sudo apt install nodejs npm` - probably some other things as well??
-1. `yarn set version berry` - Berry is needed to run `dlx` command. Classic is needed in the containers.
-1. Google Cloud Storage and service account to host uploaded files #TODO_DOCS
-1. Stripe API Key and frontend setup with Publishable Key #TODO_DOCS
-1. SendGrid API Key and template configured (requires Redis) #TODO_DOCS
+### Server Initialization (`entrypoint.sh`)
+The Medusa server container uses an entrypoint script that:
+1. Runs database migrations
+2. Creates the admin user using environment variables
+3. Seeds initial data
+4. Starts the Medusa server with logging
 
+### API Key Creation (`create-publishable-key.sh`)
+A dedicated service handles the creation of the Publishable API key required by the storefront:
+1. Authenticates with the Medusa server
+2. Creates or retrieves a publishable API key
+3. Associates the key with the default sales channel
+4. Makes the key available to the storefront container
 
-## Build Steps
+### Environment Variable Management (`replace-env-vars.sh`)
+The storefront build process uses a script to handle environment variables:
+1. Injects the generated publishable API key from the mounted volume
+2. Replaces build-time server addresses with runtime container addresses
+3. Updates all necessary files in the Next.js build output
 
-Run [build.sh](./build.sh), which uses the medusa-cli tool (version pinned) to install the `medusa` directory, builds the Backend and Admin images and runs them with `docker compose up`.
+### Build Flow
+1. Backend services (PostgreSQL, Redis) start first
+2. Medusa server initializes and becomes healthy
+3. API key creation service runs and generates necessary credentials
+4. Storefront builds and starts with the generated API key
+5. Environment variables are replaced for container networking
 
-Medusa could be run off the same image and container but I'm trying to them running seperately so I've got different medusa-config.js files for each to test a few things.
+## Prerequisites
 
-There is a seed.json file that initialised the 
+1. [Docker](https://www.docker.com/products/docker-desktop/) installed and running
+2. [just](https://just.systems/man/en/) command runner installed
+3. Required environment variables set (copy from `.env.template`)
 
-## Accessing Admin and API Endpoints
+## Quick Start Commands
 
-**Admin Dashboard:** http://localhost:7001/adminapp/ - the admin user and password is created in [medusa.sh](./medusa.sh)
+All commands are managed through the `just` command runner:
 
-**API endpoint:** http://localhost:9000
+```bash
+# Start only backend services (postgres, redis, medusa_server, medusa_worker)
+just backend
 
-Test the API endpoint with something like this `curl --location 'http://localhost:9000/store/products' --header 'Accept: application/json' | jq` (assuming you have jq installed)
+# Start production frontend with all required backend services
+just frontend
 
-## Minio
+# Start everything in production mode
+just start
 
-Minio is an S3 compatible file storage service that integrates with MedusaJS for importing and export of data such as orders or products.
+# Start development environment for the storefront
+just dev
 
-See [here](https://www.npmjs.com/package/medusa-file-minio) for the NPM package and [here](https://docs.medusajs.com/plugins/file-service/minio) for official plugin docs.
+# View logs from all services
+just logs
 
-[Exporting orders requires](https://docs.medusajs.com/plugins/file-service/minio#handle-exports) `MINIO_PRIVATE_BUCKET` to be set and will not work without it being present in medusa-config.js, as sensitive customer data should not be exported into a public bucket.
+# Stop all services
+just down
+
+# Clean everything (including volumes)
+just clean
+
+# Build all containers without starting them
+just build
+
+# Rebuild and restart only the server components
+just rebuild-server
+```
+
+## Service URLs
+
+- **Storefront:** http://localhost:8000
+- **Admin Dashboard:** http://localhost:9000/app
+- **Store API:** http://localhost:9000/store/*
+- **Admin API:** http://localhost:9000/admin/*
+
+## Development vs Production
+
+The setup supports two modes:
+
+### Production Mode
+Uses `just frontend` or `just all` which:
+- Builds optimized production containers
+- Runs the storefront in production mode
+- Minimal debug output
+- Optimized for performance
+
+### Development Mode
+Uses `just dev` which:
+- Enables hot-reloading for the storefront
+- Mounts source code for live editing
+- Provides detailed debug output
+- Optimized for development experience
 
 ## Troubleshooting
 
-Note that the Admin image is built from node:lts which has `/bin/bash` installed and the backend image is build from alpine, which has `/bin/sh` as the default shell.
+If you encounter issues:
 
-| :exclamation: [medusa.sh](./medusa.sh) initially seeds the DB on first run but the container will fail on second boot due to data and a user already existing. I need to add some logic but I fiddle with this file so much I just edit and `docker compose down backend && docker compose up backend`.  Also the seed.json contains data for my personal project, edit as needed...|
-|---------------------------------------------------------------------------------------------------------------------------------------------|
+1. Check logs with `just logs`
+2. Ensure all required environment variables are set
+3. Try cleaning the environment with `just clean` and restart
+4. Verify all services are healthy with `docker compose -f docker-compose-v2.yml ps`
 
-
+For database or service issues:
 ```bash
-# Exec into the admin container
-docker compose exec backend /bin/bash
+# Reset everything and remove volumes
+just clean
 
-# Exec into the backend container
-docker compose exec backend /bin/sh
+# Rebuild all services
+just build
 
-# Shell on disposable container using the last build of the backend image
-docker compose build backend
-docker run -it $(docker image ls backend -q) /bin/sh
-
-# Delete all containers including postgres and redis state
-docker compose down
+# Start services again
+just all
 ```
 
-Note: Postgres database state is running in Docker. Don't expect it to exist after the container is stopped.
+## Container Shell Access
 
-Unsure what version of Medusa is actually installed by `medusa-cli`, as this is does not seem configurable?! :unamused:
+```bash
+# Access Medusa server container
+docker compose -f docker-compose-v2.yml exec medusa_server sh
+
+# Access PostgreSQL container
+docker compose -f docker-compose-v2.yml exec postgres bash
+```
+

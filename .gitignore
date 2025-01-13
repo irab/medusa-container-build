@@ -1,3 +1,7 @@
 node_modules
 medusa
 .env
+.secrets
+medusa-starter-default
+nextjs-starter-medusa
+.DS_Store

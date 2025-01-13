@@ -1,0 +1,39 @@
+FROM node:20-alpine AS base
+
+# Install dependencies
+RUN apk add --no-cache libc6-compat git
+
+# Enable corepack and set yarn version
+RUN corepack enable && corepack prepare yarn@3.2.3 --activate
+
+# Set the working directory
+WORKDIR /app
+
+# Install dependencies only when needed
+FROM base AS deps
+WORKDIR /app
+
+# Add build argument for repository URL
+ARG STOREFRONT_REPO
+
+# Clone the repository and install dependencies (shallow clone)
+RUN git clone --depth 1 $STOREFRONT_REPO /app && \
+    yarn install
+
+# Development image
+FROM base AS dev
+WORKDIR /app
+
+# Copy node_modules from deps stage
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app ./
+
+# Set environment variables
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV NODE_ENV=development
+ENV PORT=8000
+ENV HOSTNAME="0.0.0.0"
+
+EXPOSE 8000
+
+CMD ["yarn", "dev"]

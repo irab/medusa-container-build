@@ -1,0 +1,215 @@
+services:
+  medusa_server:
+    build:
+      context: .
+      dockerfile: Dockerfile.medusa-server
+      args:
+        MEDUSA_REPO: ${MEDUSA_REPO}
+    profiles: ["backend", "frontend", "dev", "all"]
+    environment:
+      MEDUSA_BACKEND_URL: http://localhost:9000
+      DISABLE_MEDUSA_ADMIN: false
+      MEDUSA_WORKER_MODE: server
+    env_file: ".env"
+    container_name: medusa_server
+    hostname: medusa_server
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ./medusa-config.ts:/app/medusa-config.ts
+      - ./uploads:/app/uploads
+    networks:
+      - medusa-network
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 9000:9000
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "grep -q 'Server is ready on http://localhost:9000' /app/server.log || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  medusa_worker:
+    profiles: ["backend", "frontend", "dev", "all"]
+    build:
+      context: .
+      dockerfile: Dockerfile.medusa-server
+      args:
+        MEDUSA_REPO: ${MEDUSA_REPO}
+    environment:
+      MEDUSA_BACKEND_URL: http://localhost:9000
+      DISABLE_MEDUSA_ADMIN: true
+      MEDUSA_WORKER_MODE: worker
+    env_file: ".env"
+    container_name: medusa_worker
+    depends_on:
+      medusa_server:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - medusa-network
+    command: sh -c "yarn start"
+    entrypoint: ""
+    restart: unless-stopped
+
+  create_api:
+    profiles: ["backend", "frontend", "dev", "all"]
+    build:
+      context: .
+      dockerfile: Dockerfile.create_api
+    container_name: create_api
+    networks:
+      - medusa-network
+    env_file: ".env"
+    command: >
+      sh -c '
+      echo "Starting process to create Publishable API key..." &&
+      echo "Waiting for Medusa server to be ready..." &&
+      until curl -s -f http://medusa_server:9000/health; do
+        echo "Medusa server is not ready - waiting..."
+        sleep 5
+      done &&
+      echo "Medusa server is ready" &&
+      echo "Attempting to create API key..." &&
+      set -x &&
+      API_KEY_RESPONSE=$$(./create-publishable-key.sh -e $$ADMIN_EMAIL -p $$ADMIN_PASSWORD -u http://medusa_server:9000 2>&1) &&
+      set +x &&
+      echo "Raw response from script:" &&
+      echo "$$API_KEY_RESPONSE" &&
+      API_KEY=$$(echo "$$API_KEY_RESPONSE" | tail -n1 | tr -d "[:space:]") &&
+      if [ -z "$$API_KEY" ]; then
+        echo "Failed to create API key - received empty response" &&
+        echo "Full response from create-publishable-key.sh:" &&
+        echo "$$API_KEY_RESPONSE" &&
+        exit 1
+      elif echo "$$API_KEY" | grep -q "Error:"; then
+        echo "Failed to create API key - received error response" &&
+        echo "Full response from create-publishable-key.sh:" &&
+        echo "$$API_KEY_RESPONSE" &&
+        exit 1
+      else
+        echo "API key created successfully" &&
+        echo "Writing API key to file..." &&
+        echo -n "$$API_KEY" > /api_key/api_key &&
+        echo "API key written to /api_key" &&
+        echo "API Key bootstrap process complete"
+      fi'
+    volumes:
+      - api_key:/api_key
+
+  storefront:
+    profiles: ["frontend", "all"]
+    build:
+      context: .
+      dockerfile: Dockerfile.storefront.prod
+      args:
+        STOREFRONT_REPO: ${STOREFRONT_REPO}
+    env_file: ".env"
+    container_name: storefront
+    networks:
+      - medusa-network
+    depends_on:
+      create_api:
+        condition: service_completed_successfully
+      medusa_server:
+        condition: service_healthy
+    ports:
+      - 8000:8000
+    restart: unless-stopped
+    environment:
+      - MEDUSA_BACKEND_URL=http://medusa_server:9000
+    volumes:
+      - api_key:/api_key:ro
+
+  postgres:
+    profiles: ["backend", "frontend", "dev", "all"]
+    image: postgres:17
+    hostname: postgres
+    restart: always
+    container_name: postgres
+    env_file: ".env"
+    command: >
+      -c ssl=on
+      -c ssl_cert_file=/etc/ssl/certs/ssl-cert-snakeoil.pem
+      -c ssl_key_file=/etc/ssl/private/ssl-cert-snakeoil.key
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - medusa-network
+    ports:
+      - 5432:5432
+
+  redis:
+    profiles: ["backend", "frontend", "dev", "all"]
+    image: redis:alpine
+    hostname: redis
+    container_name: redis
+    env_file: ".env"
+    networks:
+      - medusa-network
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1m30s
+      timeout: 30s
+      retries: 5
+      start_period: 30s
+
+  dev-storefront:
+    profiles: ["dev"]
+    build:
+      context: .
+      dockerfile: Dockerfile.storefront
+      target: dev
+      args:
+        STOREFRONT_REPO: ${STOREFRONT_REPO}
+    env_file: ".env"
+    container_name: dev-storefront
+    networks:
+      - medusa-network
+    depends_on:
+      create_api:
+        condition: service_completed_successfully
+      medusa_server:
+        condition: service_healthy
+    ports:
+      - 8000:8000
+    volumes:
+      - nextjs_modules:/app/node_modules
+      - api_key:/api_key:ro
+    environment:
+      - MEDUSA_BACKEND_URL=http://medusa_server:9000
+      - NODE_ENV=development
+      - NEXT_TELEMETRY_DISABLED=1
+    command: >
+      sh -c '
+      echo "Waiting for API key..." &&
+      while [ ! -f /api_key/api_key ]; do
+        sleep 2
+      done &&
+      export NEXT_PUBLIC_MEDUSA_PUBLISHABLE_KEY=$$(cat /api_key/api_key | tr -d "[:space:]") &&
+      echo "Got API key, starting development server..." &&
+      yarn dev'
+    stdin_open: true
+    tty: true
+
+volumes:
+  medusa-data:
+  uploads:
+  api_key:
+  nextjs_modules:
+
+networks:
+  medusa-network:
