@@ -12,7 +12,7 @@ RUN apt update
 
 RUN apt -y install yarn
 
-RUN yarn add crossenv medusa-plugin-file-cloud-storage medusa-plugin-sendgrid medusa-payment-stripe medusa-file-minio
+RUN yarn add crossenv medusa-plugin-file-cloud-storage medusa-plugin-sendgrid medusa-payment-stripe
 
 RUN yarn build:admin
 

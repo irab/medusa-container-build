@@ -11,7 +11,6 @@ services:
     depends_on:
       - postgres
       - redis
-      - minio
     environment:
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/${PG_MEDUSA_DB_NAME}
       STORE_CORS: ${STORE_CORS}
@@ -24,10 +23,6 @@ services:
       SENDGRID_API_KEY: ${SENDGRID_API_KEY}
       SENDGRID_FROM: ${SENDGRID_FROM}
       SENDGRID_ORDER_PLACED_ID: ${SENDGRID_ORDER_PLACED_ID}
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-      MINIO_PRIVATE_BUCKET: ${MINIO_PRIVATE_BUCKET}
-      MINIO_PRIVATE_ACCESS_KEY: ${MINIO_PRIVATE_ACCESS_KEY}
-      MINIO_PRIVATE_SECRET_KEY: ${MINIO_PRIVATE_SECRET_KEY}
 
   postgres:
     image: postgres:15.8
@@ -64,24 +59,3 @@ services:
       GCS_SA_PRIVATE_KEY: ${GCS_SA_PRIVATE_KEY}
       GCS_PUBLIC_BUCKET_NAME: ${GCS_PUBLIC_BUCKET_NAME}
       GCS_BASE_PUBLIC_URL: https://storage.googleapis.com/${GCS_PUBLIC_BUCKET_NAME}/
-      MINIO_ENDPOINT: ${MINIO_ENDPOINT}
-      MINIO_PRIVATE_BUCKET: ${MINIO_PRIVATE_BUCKET}
-      MINIO_PRIVATE_ACCESS_KEY: ${MINIO_PRIVATE_ACCESS_KEY}
-      MINIO_PRIVATE_SECRET_KEY: ${MINIO_PRIVATE_SECRET_KEY}
-
-  minio:
-    build:
-      dockerfile: Minio.Dockerfile
-    image: medusa-minio
-    container_name: minio
-    ports:
-      - 10000:10000
-      - 10001:10001
-    volumes:
-      - "./minio.config.json:/tmp/.mc/config.json"
-      - "./minio.sh:/minio.sh"
-    environment:
-      MINIO_ROOT_USER: ${MINIO_PRIVATE_ACCESS_KEY}
-      MINIO_ROOT_PASSWORD: ${MINIO_PRIVATE_SECRET_KEY}
-
-    
